@@ -60,8 +60,8 @@ makeKDTreeFromListPSInner axisValue sorted =
             filterSmaller pts = filter (\p -> coord p currAxis <= midPointCoordValue) pts
             filterBigger pts = filter (\p -> coord p currAxis > midPointCoordValue) pts
 
-            smaller = map (\d -> filterSmaller . sorted !! d) [0..dimension - 1]
-            bigger = map (\d -> filterBigger . sorted !! d) [0..dimension - 1]
+            smaller = map (\d -> filterSmaller $ sorted !! d) [0..dimension - 1]
+            bigger = map (\d -> filterBigger $ sorted !! d) [0..dimension - 1]
 
             leftSubtree = makeKDTreeFromListPSInner (axisValue + 1) smaller
             rightSubtree = makeKDTreeFromListPSInner (axisValue + 1) bigger
