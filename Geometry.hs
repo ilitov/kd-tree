@@ -5,6 +5,7 @@ module Geometry
 ,   Point2D(..)
 ,   KDTree(..)
 ,   Region
+,   generateListOfSortedPoints
 ,   makeRegion
 ,   median
 ,   euclideanDist2
@@ -30,7 +31,7 @@ class Point p where
     minPoint :: p -> p -> p
     maxPoint :: p -> p -> p
 
-data Point2D = Point2D { x :: PointCoordType, y :: PointCoordType } deriving (Eq, Show)
+data Point2D = Point2D { x :: PointCoordType, y :: PointCoordType } deriving (Eq, Show, Read)
 
 instance Point Point2D where
     dim _ = 2
@@ -54,13 +55,7 @@ euclideanDist2 p1 p2 = sum $ map (\c -> (coord p1 c - coord p2 c) ^ 2) [0..dim p
 
 generateListOfSortedPoints :: (Point p) => [p] -> Int -> [[p]]
 generateListOfSortedPoints [] _             = []
-generateListOfSortedPoints points maxCoord  = generateListOfSortedPointsInner points maxCoord 1
-
-generateListOfSortedPointsInner :: (Point p) => [p] -> Int -> Int -> [[p]]
-generateListOfSortedPointsInner points maxCoord currCoord 
-    | currCoord > maxCoord  = []
-    | otherwise             = [sortedCurrentCoord] ++ generateListOfSortedPointsInner points maxCoord (currCoord + 1)
-        where sortedCurrentCoord = List.sortBy (comparePointsByCoord currCoord) points
+generateListOfSortedPoints points maxCoord  = map (\x -> List.sortBy (comparePointsByCoord x) points) [0..maxCoord - 1]
 
 -- !TODO: Remove if needed
 
@@ -93,7 +88,7 @@ data KDTree p = LeafKDTree { point :: [p] } |
                 NodeKDTree {    axis :: Int
                             ,   pivot :: PointCoordType
                             ,   leftTree :: KDTree p
-                            ,   rightTree :: KDTree p } deriving (Eq, Show)
+                            ,   rightTree :: KDTree p } deriving (Eq, Show, Read)
 
 data Region p = Region {    minValue :: p
                         ,   maxValue :: p} deriving (Eq, Show)

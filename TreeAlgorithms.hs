@@ -1,7 +1,11 @@
 import Geometry
 import qualified Data.List as List
+import qualified System.IO as IO
 
 points = [Point2D 7 2, Point2D 5 4, Point2D 2 3, Point2D 4 7, Point2D 9 6, Point2D 8 1]
+
+rp :: (Point p, Read p) => [Char] -> KDTree p
+rp str = read str
 
 maximumPointsInLeaf :: Int
 maximumPointsInLeaf = 1
@@ -21,13 +25,48 @@ makeKDTreeFromListInner points axisValue =
                     ,   leftTree = leftSubtree
                     ,   rightTree = rightSubtree }
 
-     where  currAxis = mod axisValue (dim (points !! 0))
+     where  currAxis = mod axisValue (dim $ head points)
             midPoint = median points currAxis
             midPointCoordValue = coord midPoint currAxis
             smaller = filter (\p -> coord p currAxis <= midPointCoordValue) points
             bigger = filter (\p -> coord p currAxis > midPointCoordValue) points
             leftSubtree = makeKDTreeFromListInner smaller (axisValue + 1)
             rightSubtree = makeKDTreeFromListInner bigger (axisValue + 1)
+
+-- BUILD KD-TREE FROM LIST OF POINTS - PRESORTED
+
+makeKDTreeFromListPS :: (Point p) => [p] -> KDTree p
+makeKDTreeFromListPS []         = LeafKDTree []
+makeKDTreeFromListPS pts = makeKDTreeFromListPSInner 0 sorted
+    where   sorted = generateListOfSortedPoints pts (dim $ head pts)
+
+makeKDTreeFromListPSInner :: (Point p) => Int -> [[p]] -> KDTree p
+makeKDTreeFromListPSInner axisValue sorted = 
+    if ptsLength <= maximumPointsInLeaf
+    then LeafKDTree pts
+    else NodeKDTree {   axis = currAxis
+                    ,   pivot = midPointCoordValue
+                    ,   leftTree = leftSubtree
+                    ,   rightTree = rightSubtree }
+                    
+    where   dimension = dim $ head $ head sorted
+            currAxis = axisValue `mod` dimension
+            pts = sorted !! currAxis
+            ptsLength = length pts
+            mid = ptsLength `div` 2 - 1
+            midPoint = pts !! mid
+            midPointCoordValue = coord midPoint currAxis
+
+            filterSmaller pts = filter (\p -> coord p currAxis <= midPointCoordValue) pts
+            filterBigger pts = filter (\p -> coord p currAxis > midPointCoordValue) pts
+
+            smaller = map (\d -> filterSmaller . sorted !! d) [0..dimension - 1]
+            bigger = map (\d -> filterBigger . sorted !! d) [0..dimension - 1]
+
+            leftSubtree = makeKDTreeFromListPSInner (axisValue + 1) smaller
+            rightSubtree = makeKDTreeFromListPSInner (axisValue + 1) bigger
+
+
 
 -- SEARCH NEAREST NEIGHBOUR
 
@@ -87,3 +126,26 @@ intervalSearch tree region =    if treeRegion == Nothing
                                 else intervalSearchInner tree r region
                                  where treeRegion = calculateRegion tree
                                        Just r = treeRegion
+
+-- SAVE/READ TREE TO/FROM FILE
+
+saveKDTree :: (Point p, Show p) => String -> KDTree p -> IO ()
+saveKDTree filename tree = writeFile filename $ show tree
+
+readKDTree :: (Point p, Read p) => String -> IO (KDTree p)
+readKDTree filename = do
+        contents <- readFile filename
+        return (read contents)
+
+-- OTHER
+
+nearestNeighbourIO :: (Point p, Eq p) => IO (KDTree p) -> (p -> p -> PointCoordType) -> p -> IO (Maybe p)
+nearestNeighbourIO tree metric p = do
+                tmp <- tree
+                return (nearestNeighbour tmp metric p)
+
+intervalSearchIO :: (Point p, Eq p) => IO (KDTree p) -> Region p -> IO ([p])
+intervalSearchIO tree region = do
+                tmp <- tree
+                return (intervalSearch tmp region)
+
