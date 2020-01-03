@@ -3,6 +3,7 @@ module Geometry
     Point(..)
 ,   PointCoordType
 ,   Point2D(..)
+,   Point3D(..)
 ,   KDTree(..)
 ,   Region
 ,   generateListOfSortedPoints
@@ -31,19 +32,35 @@ class Point p where
     minPoint :: p -> p -> p
     maxPoint :: p -> p -> p
 
-data Point2D = Point2D { x :: PointCoordType, y :: PointCoordType } deriving (Eq, Show, Read)
+data Point2D = Point2D { x2d :: PointCoordType, y2d :: PointCoordType } deriving (Eq, Show, Read)
+
+data Point3D = Point3D { x3d :: PointCoordType, y3d :: PointCoordType, z3d :: PointCoordType } deriving (Eq, Show, Read)
 
 instance Point Point2D where
     dim _ = 2
 
-    coord p 0 = x p
-    coord p 1 = y p
+    coord p 0 = x2d p
+    coord p 1 = y2d p
 
-    setCoord p 0 val = Point2D val (y p)
-    setCoord p 1 val = Point2D (x p) val
+    setCoord p 0 val = Point2D val (y2d p)
+    setCoord p 1 val = Point2D (x2d p) val
     
-    minPoint p1 p2 = Point2D (min (x p1) (x p2)) (min (y p1) (y p2))
-    maxPoint p1 p2 = Point2D (max (x p1) (x p2)) (max (y p1) (y p2))
+    minPoint p1 p2 = Point2D (min (x2d p1) (x2d p2)) (min (y2d p1) (y2d p2))
+    maxPoint p1 p2 = Point2D (max (x2d p1) (x2d p2)) (max (y2d p1) (y2d p2))
+
+instance Point Point3D where
+    dim _ = 3
+
+    coord p 0 = x3d p
+    coord p 1 = y3d p
+    coord p 2 = z3d p
+
+    setCoord p 0 val = Point3D val (y3d p) (z3d p)
+    setCoord p 1 val = Point3D (x3d p) val (z3d p)
+    setCoord p 2 val = Point3D (x3d p) (y3d p) val
+
+    minPoint p1 p2 = Point3D (min (x3d p1) (x3d p2)) (min (y3d p1) (y3d p2)) (min (z3d p1) (z3d p2))
+    maxPoint p1 p2 = Point3D (max (x3d p1) (x3d p2)) (max (y3d p1) (y3d p2)) (max (z3d p1) (z3d p2))
 
 comparePointsByCoord :: (Point p) => Int -> p -> p -> Ordering
 comparePointsByCoord c p1 p2 = compare (coord p1 c) (coord p2 c)
@@ -51,13 +68,9 @@ comparePointsByCoord c p1 p2 = compare (coord p1 c) (coord p2 c)
 euclideanDist2 :: (Point p) => p -> p -> PointCoordType
 euclideanDist2 p1 p2 = sum $ map (\c -> (coord p1 c - coord p2 c) ^ 2) [0..dim p1 - 1]
 
--- TODO: Remove if needed
-
 generateListOfSortedPoints :: (Point p) => [p] -> Int -> [[p]]
 generateListOfSortedPoints [] _             = []
 generateListOfSortedPoints points maxCoord  = map (\x -> List.sortBy (comparePointsByCoord x) points) [0..maxCoord - 1]
-
--- !TODO: Remove if needed
 
 medianOfThree :: (Point p) => [p] -> Int -> Int -> p
 medianOfThree points axis size =    if size < 2

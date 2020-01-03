@@ -4,9 +4,6 @@ import qualified System.IO as IO
 
 points = [Point2D 7 2, Point2D 5 4, Point2D 2 3, Point2D 4 7, Point2D 9 6, Point2D 8 1]
 
-rp :: (Point p, Read p) => [Char] -> KDTree p
-rp str = read str
-
 maximumPointsInLeaf :: Int
 maximumPointsInLeaf = 1
 
@@ -33,10 +30,10 @@ makeKDTreeFromListInner points axisValue =
             leftSubtree = makeKDTreeFromListInner smaller (axisValue + 1)
             rightSubtree = makeKDTreeFromListInner bigger (axisValue + 1)
 
--- BUILD KD-TREE FROM LIST OF POINTS - PRESORTED
+-- BUILD KD-TREE FROM LIST OF PRESORTED POINTS
 
 makeKDTreeFromListPS :: (Point p) => [p] -> KDTree p
-makeKDTreeFromListPS []         = LeafKDTree []
+makeKDTreeFromListPS []  = LeafKDTree []
 makeKDTreeFromListPS pts = makeKDTreeFromListPSInner 0 sorted
     where   sorted = generateListOfSortedPoints pts (dim $ head pts)
 
@@ -57,16 +54,13 @@ makeKDTreeFromListPSInner axisValue sorted =
             midPoint = pts !! mid
             midPointCoordValue = coord midPoint currAxis
 
-            filterSmaller pts = filter (\p -> coord p currAxis <= midPointCoordValue) pts
-            filterBigger pts = filter (\p -> coord p currAxis > midPointCoordValue) pts
+            filterPoints f = filter (\p -> coord p currAxis `f` midPointCoordValue)
 
-            smaller = map (\d -> filterSmaller $ sorted !! d) [0..dimension - 1]
-            bigger = map (\d -> filterBigger $ sorted !! d) [0..dimension - 1]
+            smaller = map (\d -> filterPoints (<=) $ sorted !! d) [0..dimension - 1]
+            bigger = map (\d -> filterPoints (>) $ sorted !! d) [0..dimension - 1]
 
             leftSubtree = makeKDTreeFromListPSInner (axisValue + 1) smaller
             rightSubtree = makeKDTreeFromListPSInner (axisValue + 1) bigger
-
-
 
 -- SEARCH NEAREST NEIGHBOUR
 
