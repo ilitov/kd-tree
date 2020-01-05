@@ -127,7 +127,9 @@ regionIntersectRegion region1 region2 =
                 intersect axis =    let (minVal1, maxVal1) = regionExtremeValues region1 axis
                                         (minVal2, maxVal2) = regionExtremeValues region2 axis
                                     in  minVal2 >= minVal1 && minVal2 <= maxVal1 ||
-                                        maxVal2 >= minVal1 && maxVal2 <= maxVal1
+                                        maxVal2 >= minVal1 && maxVal2 <= maxVal1 ||
+                                        minVal1 >= minVal2 && minVal1 <= maxVal2 ||
+                                        maxVal1 >= minVal2 && maxVal1 <= maxVal2
 
 regionContainsRegion :: (Point p) => Region p -> Region p -> Bool
 regionContainsRegion region1 region2 = 
@@ -163,9 +165,13 @@ calculateRegion (NodeKDTree _ _ leftTree rightTree) =
         else Nothing
 
 leftRegion :: (Point p) => Region p -> Int -> PointCoordType -> Region p
-leftRegion r axis val = Region (minValue r) (minPoint pivotAxis (maxValue r))
+leftRegion r axis val = if val < coord (minValue r) axis
+                        then r
+                        else Region (minValue r) (minPoint pivotAxis (maxValue r))
     where pivotAxis = setCoord (maxValue r) axis val
 
 rightRegion :: (Point p) => Region p -> Int -> PointCoordType -> Region p
-rightRegion r axis val = Region (maxPoint pivotAxis (minValue r)) (maxValue r)
+rightRegion r axis val =if val > coord (maxValue r) axis
+                        then r
+                        else Region (maxPoint pivotAxis (minValue r)) (maxValue r)
     where pivotAxis = setCoord (minValue r) axis val

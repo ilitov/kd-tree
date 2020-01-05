@@ -110,7 +110,7 @@ intervalSearchInner (NodeKDTree axis pivot leftTree rightTree) treeRegion region
     in (findPoints leftR leftTree) ++ (findPoints rightR rightTree)
         where findPoints r tree =   if regionContainsRegion region r
                                     then reportSubtree tree
-                                    else    if regionIntersectRegion treeRegion r
+                                    else    if regionIntersectRegion region r
                                             then intervalSearchInner tree r region
                                     else []
 
@@ -142,4 +142,3 @@ intervalSearchIO :: (Point p, Eq p) => IO (KDTree p) -> Region p -> IO ([p])
 intervalSearchIO tree region = do
                 tmp <- tree
                 return (intervalSearch tmp region)
-
