@@ -12,7 +12,7 @@ module Geometry
 ,   euclideanDist2
 ,   regionContainsPoint
 ,   regionContainsRegion
-,   regionIntersectRegion
+,   regionIntersectsRegion
 ,   addPointToRegion
 ,   calculateRegion
 ,   leftRegion
@@ -45,8 +45,8 @@ instance Point Point2D where
     setCoord p 0 val = Point2D val (y2d p)
     setCoord p 1 val = Point2D (x2d p) val
     
-    minPoint p1 p2 = Point2D (min (x2d p1) (x2d p2)) (min (y2d p1) (y2d p2))
-    maxPoint p1 p2 = Point2D (max (x2d p1) (x2d p2)) (max (y2d p1) (y2d p2))
+    minPoint (Point2D x1 y1) (Point2D x2 y2) = Point2D (min x1 x2) (min y1 y2)
+    maxPoint (Point2D x1 y1) (Point2D x2 y2) = Point2D (max x1 x2) (max y1 y2)
 
 instance Point Point3D where
     dim _ = 3
@@ -59,8 +59,8 @@ instance Point Point3D where
     setCoord p 1 val = Point3D (x3d p) val (z3d p)
     setCoord p 2 val = Point3D (x3d p) (y3d p) val
 
-    minPoint p1 p2 = Point3D (min (x3d p1) (x3d p2)) (min (y3d p1) (y3d p2)) (min (z3d p1) (z3d p2))
-    maxPoint p1 p2 = Point3D (max (x3d p1) (x3d p2)) (max (y3d p1) (y3d p2)) (max (z3d p1) (z3d p2))
+    minPoint (Point3D x1 y1 z1) (Point3D x2 y2 z2) = Point3D (min x1 x2) (min y1 y2) (min z1 z2)
+    maxPoint (Point3D x1 y1 z1) (Point3D x2 y2 z2) = Point3D (max x1 x2) (max y1 y2) (max z1 z2)
 
 comparePointsByCoord :: (Point p) => Int -> p -> p -> Ordering
 comparePointsByCoord c p1 p2 = compare (coord p1 c) (coord p2 c)
@@ -120,8 +120,8 @@ regionContainsPoint region point =
         where contains axis =   let (minVal, maxVal) = regionExtremeValues region axis
                                 in  coord point axis >= minVal && coord point axis <= maxVal
 
-regionIntersectRegion :: (Point p) => Region p -> Region p -> Bool
-regionIntersectRegion region1 region2 =
+regionIntersectsRegion :: (Point p) => Region p -> Region p -> Bool
+regionIntersectsRegion region1 region2 =
     List.all intersect [0..dimension - 1]
         where   dimension = dim (minValue region1)
                 intersect axis =    let (minVal1, maxVal1) = regionExtremeValues region1 axis

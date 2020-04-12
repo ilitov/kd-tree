@@ -110,7 +110,7 @@ intervalSearchInner (NodeKDTree axis pivot leftTree rightTree) treeRegion region
     in (findPoints leftR leftTree) ++ (findPoints rightR rightTree)
         where findPoints r tree =   if regionContainsRegion region r
                                     then reportSubtree tree
-                                    else    if regionIntersectRegion region r
+                                    else    if regionIntersectsRegion region r
                                             then intervalSearchInner tree r region
                                     else []
 
